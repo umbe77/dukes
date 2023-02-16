@@ -6,18 +6,18 @@ import (
 	"github.com/umbe77/ucd/message"
 )
 
-type SetCommand struct {
+type GetCommand struct {
 	mc *cache.MemoryCache
 }
 
-func NewSetCommand(c *cache.MemoryCache) *SetCommand {
-	return &SetCommand{
-		mc: c,
+func NewGetCommand(cache *cache.MemoryCache) *GetCommand {
+	return &GetCommand{
+		mc: cache,
 	}
 }
 
-func getSetResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
-	if len(m.Params) != 2 {
+func getGetResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
 			Params: []message.MessageParam{
@@ -34,11 +34,8 @@ func getSetResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 		}
 	}
 	key := string(m.Params[0].Value)
-	value := &cache.CacheValue{
-		Kind:  m.Params[1].Kind,
-		Value: m.Params[1].ToAny(),
-	}
-	if err := c.Set(key, value); err != nil {
+	cacheValue, err := c.Get(key)
+	if err != nil {
 		return message.ResponseMessage{
 			St: message.Error,
 			Params: []message.MessageParam{
@@ -49,17 +46,17 @@ func getSetResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 	return message.ResponseMessage{
 		St: message.OK,
 		Params: []message.MessageParam{
-			message.NewMessageParam(datatypes.String, key),
+			message.NewMessageParam(cacheValue.Kind, cacheValue.Value),
 		},
 	}
 }
 
-// TODO: MAKE TEST FOR Set Command
-func (c *SetCommand) Execute(m message.RequestMessage) <-chan []byte {
+// TODO: MAKE TEST
+func (c *GetCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
 	go func(m message.RequestMessage, mc *cache.MemoryCache) {
-		ch <- getSetResp(m, mc).ToMessage().Serialize()
+		ch <- getGetResp(m, mc).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{
 			St:     message.EndResp,

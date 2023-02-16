@@ -29,46 +29,47 @@ func (c *Client) Close() error {
 }
 
 func (c *Client) Ping() (string, error) {
-	pingMsg := message.Message{
+	pingMsg := message.RequestMessage{
 		Cmd:    message.CmdPing,
 		Params: make([]message.MessageParam, 0),
 	}
 
-	_, sendErr := c.conn.Write(pingMsg.Serialize())
+	req := pingMsg.ToMessage()
+	_, sendErr := c.conn.Write(req.Serialize())
 	if sendErr != nil {
 		return "", sendErr
 	}
 
-	return processSimpleResopnse(c.conn)
-
+	return precessSimpleResponse(c.conn)
 }
 
 func (c *Client) Set(key string, kind datatypes.DataType, value any) (string, error) {
-	setMsg := message.Message{
+	setMsg := message.RequestMessage{
 		Cmd: message.CmdSet,
 		Params: []message.MessageParam{
 			message.NewMessageParam(datatypes.String, key),
 			message.NewMessageParam(kind, value),
 		},
-	}
+	}.ToMessage()
 
 	if _, err := c.conn.Write(setMsg.Serialize()); err != nil {
 		return "", err
 	}
 
-	return processSimpleResopnse(c.conn)
+	return precessSimpleResponse(c.conn)
 }
 
 func (c *Client) Get(key string) (message.MessageParam, error) {
-	getMsg := message.Message{
+	getMsg := message.RequestMessage{
 		Cmd: message.CmdGet,
 		Params: []message.MessageParam{
 			message.NewMessageParam(datatypes.String, key),
 		},
 	}
 
-	if _, err := c.conn.Write(getMsg.Serialize()); err != nil {
+	if _, err := c.conn.Write(getMsg.ToMessage().Serialize()); err != nil {
 		return message.MessageParam{}, err
 	}
-	return message.MessageParam{}, nil
+
+	return processGetResponse(c.conn)
 }

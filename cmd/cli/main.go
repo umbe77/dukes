@@ -31,7 +31,7 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Printf("Set %s\n", setRes)
-	setRes, err = c.Set("Key2", datatypes.Int, 65999)
+	setRes, err = c.Set("Key2", datatypes.Int, int32(65999))
 	if err != nil {
 		log.Println(err)
 	}
@@ -51,4 +51,10 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Printf("Set %s\n", setRes)
+
+	getRes, err := c.Get("Key2")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("Get %v\n", getRes.ToAny())
 }

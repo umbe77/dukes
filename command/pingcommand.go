@@ -1,27 +1,30 @@
 package command
 
 import (
-	"bytes"
-	"encoding/binary"
-
+	"github.com/umbe77/ucd/datatypes"
 	"github.com/umbe77/ucd/message"
 )
 
 type PingCommand struct {
 }
 
-func (c *PingCommand) Execute(m message.Message) <-chan []byte {
+func (c *PingCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
 	go func() {
-		buf := new(bytes.Buffer)
-		binary.Write(buf, binary.LittleEndian, message.BeginResp)
-		binary.Write(buf, binary.LittleEndian, message.OK)
-		binary.Write(buf, binary.LittleEndian, int32(len("Pong")))
-		binary.Write(buf, binary.LittleEndian, []byte("Pong"))
-		binary.Write(buf, binary.LittleEndian, message.EndResp)
-		ch <- buf.Bytes()
-		buf.Reset()
+
+		ch <- message.ResponseMessage{
+			St: message.OK,
+			Params: []message.MessageParam{
+				message.NewMessageParam(datatypes.String, "Pong"),
+			},
+		}.ToMessage().Serialize()
+
+		ch <- message.ResponseMessage{
+			St:     message.EndResp,
+			Params: []message.MessageParam{},
+		}.ToMessage().Serialize()
+
 		close(ch)
 	}()
 

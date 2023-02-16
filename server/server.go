@@ -51,22 +51,24 @@ func (s *Server) handleConnection(c net.Conn) {
 
 		}
 		//TODO: Logging message received (print ut the message)
-		go s.handleCommand(m, c)
+		go s.handleCommand(message.NewRequestMessage(m), c)
 	}
 }
 
-func (s *Server) handleCommand(m message.Message, c net.Conn) {
+func (s *Server) handleCommand(m message.RequestMessage, c net.Conn) {
 	var cmd command.Command
 	switch m.Cmd {
 	case message.CmdPing:
 		cmd = &command.PingCommand{}
 	case message.CmdSet:
 		cmd = command.NewSetCommand(s.ch)
+	case message.CmdGet:
+		cmd = command.NewGetCommand(s.ch)
 	}
 
 	for v := range cmd.Execute(m) {
 		//TODO: Debug log response message
-		//log.Println(v)
+		// log.Println(v)
 		c.Write(v)
 	}
 	log.Printf("Command %d, Handled\n", m.Cmd)

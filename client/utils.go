@@ -1,55 +1,76 @@
 package client
 
 import (
-	"encoding/binary"
 	"fmt"
 	"net"
 
 	"github.com/umbe77/ucd/message"
 )
 
-func processSimpleResopnse(conn net.Conn) (string, error) {
-	//First Read from response should be a Status BeginResp
-	var bStatus message.Status
-	err := binary.Read(conn, binary.LittleEndian, &bStatus)
+func GetResponseMessage(conn net.Conn) (message.ResponseMessage, error) {
+	m, err := message.Deserialize(conn)
 	if err != nil {
-		return "", err
+		return message.ResponseMessage{}, err
 	}
-	if bStatus != message.BeginResp {
-		return "", fmt.Errorf("response message bad formatted: %v, should be: %v", bStatus, message.BeginResp)
+	return message.NewResponseMessage(m), nil
+}
+
+func precessSimpleResponse(conn net.Conn) (string, error) {
+
+	var resp string
+	var respError error
+	msgReceivedCount := 0
+	for {
+		msgReceivedCount++
+		m, err := GetResponseMessage(conn)
+		if err != nil {
+			return "", err
+		}
+		if m.St == message.EndResp {
+			break
+		}
+		if msgReceivedCount == 1 {
+			if len(m.Params) != 1 {
+				respError = fmt.Errorf("bad format, not enough params")
+				continue
+			}
+			resp = string(m.Params[0].Value)
+			if m.St == message.Error {
+				respError = fmt.Errorf(string(m.Params[0].Value))
+			}
+		}
 	}
 
-	//Second and third packet shuold be a status ok and message Pong
-	status := make([]byte, 1)
-	err = binary.Read(conn, binary.LittleEndian, &status)
-	if err != nil {
-		return "", err
-	}
-	var respLen int32
-	err = binary.Read(conn, binary.LittleEndian, &respLen)
-	if err != nil {
-		return "", err
+	return resp, respError
+
+}
+
+func processGetResponse(conn net.Conn) (message.MessageParam, error) {
+
+	var resp message.MessageParam
+	var respError error
+	msgReceivedCount := 0
+	for {
+		msgReceivedCount++
+		m, err := GetResponseMessage(conn)
+		if err != nil {
+			return message.MessageParam{}, err
+		}
+		if m.St == message.EndResp {
+			break
+		}
+		if msgReceivedCount == 1 {
+			if len(m.Params) != 1 {
+				respError = fmt.Errorf("bad format, not enough params")
+				continue
+			}
+			resp = m.Params[0]
+			if m.St == message.Error {
+				respError = fmt.Errorf(string(m.Params[0].Value))
+			}
+		}
 	}
 
-	resp := make([]byte, respLen)
-	err = binary.Read(conn, binary.LittleEndian, &resp)
-	if err != nil {
-		return "", err
-	}
-
-	//Last Packet should be a EndResp status
-	var eStatus message.Status
-	err = binary.Read(conn, binary.LittleEndian, &eStatus)
-	if err != nil {
-		return "", err
-	}
-	if eStatus != message.EndResp {
-		return "", fmt.Errorf("response message bad formatted: %v, should be: %v", eStatus, message.EndResp)
-	}
-
-	if message.Status(status[0]) != message.OK {
-		return "", fmt.Errorf("error: %s", resp)
-	}
-	return string(resp), nil
+	return resp, respError
 
 }
