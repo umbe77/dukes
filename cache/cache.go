@@ -15,6 +15,7 @@ type CacheValue struct {
 type Cache interface {
 	Set(key string, value *CacheValue) error
 	Get(key string) (*CacheValue, error)
+	Has(key string) bool
 	Del(key string) error
 	Dump() chan string
 }
@@ -35,6 +36,14 @@ func (c *MemoryCache) Set(key string, value *CacheValue) error {
 	c.c[key] = value
 	c.Unlock()
 	return nil
+}
+
+func (c *MemoryCache) Has(key string) bool {
+	var result bool
+	c.RLock()
+	_, result = c.c[key]
+	c.RUnlock()
+	return result
 }
 
 func (c *MemoryCache) Get(key string) (*CacheValue, error) {

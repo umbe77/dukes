@@ -17,7 +17,7 @@ func TestSet(t *testing.T) {
 	)
 	if err = c.Set("Key1", &cache.CacheValue{
 		Kind:  datatypes.Int,
-		Value: 10,
+		Value: int32(10),
 	}); err != nil {
 		t.Errorf("Problem setting Key1")
 	}
@@ -49,7 +49,7 @@ func TestSet(t *testing.T) {
 	if v.Kind != datatypes.Int {
 		t.Errorf("Key 1 should by Int, got %v", v.Kind)
 	}
-	if int32(v.Value.(int)) != 10 {
+	if int32(v.Value.(int32)) != 10 {
 		t.Errorf("Key1 v expcetd 10, got %v", v)
 	}
 
@@ -100,6 +100,23 @@ func TestDel(t *testing.T) {
 
 	if v, err := c.Get("Key1"); err == nil {
 		t.Errorf("Key1 still present in cache with value %v", v)
+	}
+
+}
+
+func TestHas(t *testing.T) {
+	c := cache.NewCache()
+	c.Set("key1", &cache.CacheValue{
+		Kind:  datatypes.String,
+		Value: 1,
+	})
+
+	if !c.Has("key1") {
+		t.Errorf("key1 not found")
+	}
+
+	if c.Has("key1") {
+		t.Errorf("key2 found")
 	}
 
 }

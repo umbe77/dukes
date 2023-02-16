@@ -1,17 +1,18 @@
 package message
 
-type Command uint8
+type RequestCommand uint8
 
 const (
-	CmdPing Command = iota
+	CmdPing RequestCommand = iota
 	CmdSet
 	CmdGet
+	CmdHas
 	CmdDel
 	CmdDump
 )
 
 type RequestMessage struct {
-	Cmd    Command
+	Cmd    RequestCommand
 	Params []MessageParam
 }
 
@@ -24,7 +25,7 @@ func (m RequestMessage) ToMessage() Message {
 
 func NewRequestMessage(m Message) RequestMessage {
 	return RequestMessage{
-		Cmd:    Command(m.Header),
+		Cmd:    RequestCommand(m.Header),
 		Params: m.Params,
 	}
 }
