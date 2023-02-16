@@ -87,4 +87,9 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Printf("Has Key3.1 %v\n", hasRes)
+
+	fmt.Println("-------------------")
+	for k := range c.Dump() {
+		fmt.Printf("%s\n", k)
+	}
 }

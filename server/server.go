@@ -68,6 +68,8 @@ func (s *Server) handleCommand(m message.RequestMessage, c net.Conn) {
 		cmd = command.NewHasCommand(s.ch)
 	case message.CmdDel:
 		cmd = command.NewDelCommand(s.ch)
+	case message.CmdDump:
+		cmd = command.NewDumpCommand(s.ch)
 	}
 
 	for v := range cmd.Execute(m) {

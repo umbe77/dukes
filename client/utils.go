@@ -2,6 +2,7 @@ package client
 
 import (
 	"fmt"
+	"log"
 	"net"
 
 	"github.com/umbe77/ucd/datatypes"
@@ -128,4 +129,32 @@ func processDelResponse(conn net.Conn) error {
 	}
 
 	return respError
+}
+
+func processDumpResponse(conn net.Conn) <-chan string {
+	keysCh := make(chan string)
+
+	go func(conn net.Conn) {
+		for {
+			m, err := GetResponseMessage(conn)
+			if err != nil {
+				close(keysCh)
+				break
+			}
+			if m.St == message.EndResp {
+				close(keysCh)
+				break
+			}
+			if m.St == message.Error {
+				log.Println(m.Params[0].Value)
+				close(keysCh)
+				break
+			}
+			if len(m.Params) > 0 && m.Params[0].Kind == datatypes.String {
+				keysCh <- string(m.Params[0].Value)
+			}
+		}
+	}(conn)
+
+	return keysCh
 }

@@ -101,3 +101,17 @@ func (c *Client) Del(key string) error {
 
 	return processDelResponse(c.conn)
 }
+
+func (c *Client) Dump() <-chan string {
+	dumpMsg := message.RequestMessage{
+		Cmd:    message.CmdDump,
+		Params: []message.MessageParam{},
+	}
+
+	if _, err := c.conn.Write(dumpMsg.ToMessage().Serialize()); err != nil {
+		return nil
+	}
+
+	return processDumpResponse(c.conn)
+
+}

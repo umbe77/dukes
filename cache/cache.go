@@ -68,9 +68,17 @@ func (c *MemoryCache) Del(key string) error {
 	return nil
 }
 
-func (c *MemoryCache) Dump() chan string {
-	//TODO: make this method yelding via channels
-	keys := make(chan string)
+func (c *MemoryCache) Dump() <-chan string {
+	keysCh := make(chan string)
 
-	return keys
+	go func(mc *MemoryCache) {
+
+		for k, _ := range c.c {
+			keysCh <- k
+		}
+
+		close(keysCh)
+	}(c)
+
+	return keysCh
 }
