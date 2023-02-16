@@ -115,7 +115,7 @@ func TestHas(t *testing.T) {
 		t.Errorf("key1 not found")
 	}
 
-	if c.Has("key1") {
+	if c.Has("key2") {
 		t.Errorf("key2 found")
 	}
 
