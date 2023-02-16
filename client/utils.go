@@ -107,3 +107,25 @@ func processHasResponse(conn net.Conn) (bool, error) {
 
 	return resp, respError
 }
+
+func processDelResponse(conn net.Conn) error {
+	var respError error
+	msgReceivedCount := 0
+	for {
+		msgReceivedCount++
+		m, err := GetResponseMessage(conn)
+		if err != nil {
+			return err
+		}
+		if m.St == message.EndResp {
+			break
+		}
+		if msgReceivedCount == 1 {
+			if m.St == message.Error {
+				respError = fmt.Errorf(string(m.Params[0].Value))
+			}
+		}
+	}
+
+	return respError
+}

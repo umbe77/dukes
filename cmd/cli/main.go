@@ -69,4 +69,22 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Printf("Has Key4 %v\n", hasRes)
+
+	hasRes, err = c.Has("Key3.1")
+	if err != nil {
+		log.Println(err)
+	}
+
+	fmt.Printf("Has Key3.1 %v\n", hasRes)
+	err = c.Del("Key3.1")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println("Key3.1 Deleted")
+
+	hasRes, err = c.Has("Key3.1")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("Has Key3.1 %v\n", hasRes)
 }

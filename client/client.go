@@ -87,3 +87,17 @@ func (c *Client) Has(key string) (bool, error) {
 
 	return processHasResponse(c.conn)
 }
+
+func (c *Client) Del(key string) error {
+	delMsg := message.RequestMessage{
+		Cmd: message.CmdDel,
+		Params: []message.MessageParam{
+			message.NewMessageParam(datatypes.String, key),
+		},
+	}
+	if _, err := c.conn.Write(delMsg.ToMessage().Serialize()); err != nil {
+		return err
+	}
+
+	return processDelResponse(c.conn)
+}
