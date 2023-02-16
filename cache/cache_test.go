@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/umbe77/ucd/cache"
-	"github.com/umbe77/ucd/datatypes"
+	"github.com/umbe77/dukes/cache"
+	"github.com/umbe77/dukes/datatypes"
 )
 
 func TestSet(t *testing.T) {

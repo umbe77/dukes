@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"time"
 
-	"github.com/umbe77/ucd/datatypes"
+	"github.com/umbe77/dukes/datatypes"
 )
 
 type MessageParam struct {

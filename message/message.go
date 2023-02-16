@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/umbe77/ucd/datatypes"
+	"github.com/umbe77/dukes/datatypes"
 )
 
 type Message struct {

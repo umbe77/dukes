@@ -5,8 +5,8 @@ import (
 	"log"
 	"net"
 
-	"github.com/umbe77/ucd/datatypes"
-	"github.com/umbe77/ucd/message"
+	"github.com/umbe77/dukes/datatypes"
+	"github.com/umbe77/dukes/message"
 )
 
 func GetResponseMessage(conn net.Conn) (message.ResponseMessage, error) {

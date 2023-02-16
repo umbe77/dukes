@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/umbe77/ucd/cache"
-	"github.com/umbe77/ucd/server"
+	"github.com/umbe77/dukes/cache"
+	"github.com/umbe77/dukes/server"
 )
 
 func main() {

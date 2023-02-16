@@ -3,8 +3,8 @@ package client
 import (
 	"net"
 
-	"github.com/umbe77/ucd/datatypes"
-	"github.com/umbe77/ucd/message"
+	"github.com/umbe77/dukes/datatypes"
+	"github.com/umbe77/dukes/message"
 )
 
 type Client struct {

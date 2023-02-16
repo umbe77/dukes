@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/umbe77/ucd/client"
-	"github.com/umbe77/ucd/datatypes"
+	"github.com/umbe77/dukes/client"
+	"github.com/umbe77/dukes/datatypes"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-## UCD Distributed Cache Service
+## Dukes Distributed Cache Service
 
 ### TODO
 
@@ -7,4 +7,4 @@
 - [x] Binary message packets
 - [x] Define type for value in message in order to have typed value
 - [ ] Raft Consensus
-- [ ] TCP Client
+- [x] TCP Client

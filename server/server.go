@@ -4,9 +4,9 @@ import (
 	"log"
 	"net"
 
-	"github.com/umbe77/ucd/cache"
-	"github.com/umbe77/ucd/command"
-	"github.com/umbe77/ucd/message"
+	"github.com/umbe77/dukes/cache"
+	"github.com/umbe77/dukes/command"
+	"github.com/umbe77/dukes/message"
 )
 
 type Server struct {

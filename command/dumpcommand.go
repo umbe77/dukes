@@ -1,9 +1,9 @@
 package command
 
 import (
-	"github.com/umbe77/ucd/cache"
-	"github.com/umbe77/ucd/datatypes"
-	"github.com/umbe77/ucd/message"
+	"github.com/umbe77/dukes/cache"
+	"github.com/umbe77/dukes/datatypes"
+	"github.com/umbe77/dukes/message"
 )
 
 type DumpCommand struct {
