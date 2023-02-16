@@ -6,22 +6,22 @@ import (
 	"github.com/umbe77/ucd/message"
 )
 
-type GetCommand struct {
+type HasCommand struct {
 	mc *cache.MemoryCache
 }
 
-func NewGetCommand(cache *cache.MemoryCache) *GetCommand {
-	return &GetCommand{
+func NewHasCommand(cache *cache.MemoryCache) *HasCommand {
+	return &HasCommand{
 		mc: cache,
 	}
 }
 
-func getGetResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+func getHasResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
 	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
 			Params: []message.MessageParam{
-				message.NewMessageParam(datatypes.String, "Get message should have 1 params, key"),
+				message.NewMessageParam(datatypes.String, "Has message should have 1 params, key"),
 			},
 		}
 	}
@@ -34,29 +34,23 @@ func getGetResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 		}
 	}
 	key := string(m.Params[0].Value)
-	cacheValue, err := c.Get(key)
-	if err != nil {
-		return message.ResponseMessage{
-			St: message.Error,
-			Params: []message.MessageParam{
-				message.NewMessageParam(datatypes.String, err.Error()),
-			},
-		}
-	}
+	hasKey := c.Has(key)
+
 	return message.ResponseMessage{
 		St: message.OK,
 		Params: []message.MessageParam{
-			message.NewMessageParam(cacheValue.Kind, cacheValue.Value),
+			message.NewMessageParam(datatypes.Bool, hasKey),
 		},
 	}
 }
 
 // TODO: MAKE TEST
-func (c *GetCommand) Execute(m message.RequestMessage) <-chan []byte {
+func (c *HasCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
 	go func(m message.RequestMessage, mc *cache.MemoryCache) {
-		ch <- getGetResp(m, mc).ToMessage().Serialize()
+
+		ch <- getHasResp(m, mc).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{
 			St:     message.EndResp,

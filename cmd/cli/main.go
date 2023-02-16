@@ -57,4 +57,16 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Printf("Get %v\n", getRes.ToAny())
+
+	hasRes, err := c.Has("key3")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("Has key3 %v\n", hasRes)
+
+	hasRes, err = c.Has("Key4")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Printf("Has Key4 %v\n", hasRes)
 }

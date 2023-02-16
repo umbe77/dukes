@@ -64,6 +64,8 @@ func (s *Server) handleCommand(m message.RequestMessage, c net.Conn) {
 		cmd = command.NewSetCommand(s.ch)
 	case message.CmdGet:
 		cmd = command.NewGetCommand(s.ch)
+	case message.CmdHas:
+		cmd = command.NewHasCommand(s.ch)
 	}
 
 	for v := range cmd.Execute(m) {

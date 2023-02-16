@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/umbe77/ucd/datatypes"
 	"github.com/umbe77/ucd/message"
 )
 
@@ -73,4 +74,36 @@ func processGetResponse(conn net.Conn) (message.MessageParam, error) {
 
 	return resp, respError
 
+}
+
+func processHasResponse(conn net.Conn) (bool, error) {
+	var resp bool
+	var respError error
+	msgReceivedCount := 0
+	for {
+		msgReceivedCount++
+		m, err := GetResponseMessage(conn)
+		if err != nil {
+			return false, err
+		}
+		if m.St == message.EndResp {
+			break
+		}
+		if msgReceivedCount == 1 {
+			if len(m.Params) != 1 {
+				respError = fmt.Errorf("bad format, not enough params")
+				continue
+			}
+			respParam := m.Params[0]
+			if m.St == message.Error {
+				respError = fmt.Errorf(string(m.Params[0].Value))
+			}
+			if respParam.Kind != datatypes.Bool {
+				respError = fmt.Errorf("bad format, message not in bool format")
+			}
+			resp = respParam.ToAny().(bool)
+		}
+	}
+
+	return resp, respError
 }

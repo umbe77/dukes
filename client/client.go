@@ -73,3 +73,17 @@ func (c *Client) Get(key string) (message.MessageParam, error) {
 
 	return processGetResponse(c.conn)
 }
+
+func (c *Client) Has(key string) (bool, error) {
+	hasMsg := message.RequestMessage{
+		Cmd: message.CmdHas,
+		Params: []message.MessageParam{
+			message.NewMessageParam(datatypes.String, key),
+		},
+	}
+	if _, err := c.conn.Write(hasMsg.ToMessage().Serialize()); err != nil {
+		return false, err
+	}
+
+	return processHasResponse(c.conn)
+}
