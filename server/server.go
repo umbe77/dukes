@@ -1,3 +1,8 @@
+// Copyright (c) 2023 Robeto Ughi
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package server
 
 import (
@@ -10,35 +15,41 @@ import (
 )
 
 type Server struct {
-	listenerAddr string
+	ListenerAddr string
 	ch           *cache.MemoryCache
 	ln           net.Listener
 }
 
 func NewServer(addr string, cache *cache.MemoryCache) *Server {
 	return &Server{
-		listenerAddr: addr,
+		ListenerAddr: addr,
 		ch:           cache,
 	}
 }
 
+func (s *Server) Close() {
+	s.ln.Close()
+}
+
 func (s *Server) Run() error {
 	var err error
-	s.ln, err = net.Listen("tcp", s.listenerAddr)
-	defer s.ln.Close()
+	s.ln, err = net.Listen("tcp", s.ListenerAddr)
 	if err != nil {
 		return err
 	}
 
-	for {
-		conn, err := s.ln.Accept()
-		if err != nil {
-			//TODO: logging
-			log.Println(err)
-			continue
+	go func(ln net.Listener) {
+		for {
+			conn, err := s.ln.Accept()
+			if err != nil {
+				//TODO: logging
+				log.Println(err)
+				continue
+			}
+			go s.handleConnection(conn)
 		}
-		go s.handleConnection(conn)
-	}
+	}(s.ln)
+	return nil
 }
 
 func (s *Server) handleConnection(c net.Conn) {
