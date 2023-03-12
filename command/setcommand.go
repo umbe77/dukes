@@ -1,22 +1,25 @@
 package command
 
 import (
-	"github.com/umbe77/dukes/cache"
+	"time"
+
+	"github.com/hashicorp/raft"
+
 	"github.com/umbe77/dukes/datatypes"
 	"github.com/umbe77/dukes/message"
 )
 
 type SetCommand struct {
-	mc *cache.Cache
+	ra *raft.Raft
 }
 
-func NewSetCommand(c *cache.Cache) *SetCommand {
+func NewSetCommand(ra *raft.Raft) *SetCommand {
 	return &SetCommand{
-		mc: c,
+		ra: ra,
 	}
 }
 
-func getSetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
+func getSetResp(m message.RequestMessage, ra *raft.Raft) message.ResponseMessage {
 	if len(m.Params) != 2 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -33,12 +36,8 @@ func getSetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessag
 			},
 		}
 	}
-	key := string(m.Params[0].Value)
-	value := &cache.CacheValue{
-		Kind:  m.Params[1].Kind,
-		Value: m.Params[1].ToAny(),
-	}
-	if err := c.Set(key, value); err != nil {
+
+	if err := ra.Apply(m.ToMessage().Serialize(), time.Millisecond*50).Error(); err != nil {
 		return message.ResponseMessage{
 			St: message.Error,
 			Params: []message.MessageParam{
@@ -46,6 +45,8 @@ func getSetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessag
 			},
 		}
 	}
+
+	key := string(m.Params[0].Value)
 	return message.ResponseMessage{
 		St: message.OK,
 		Params: []message.MessageParam{
@@ -58,8 +59,8 @@ func getSetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessag
 func (c *SetCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.Cache) {
-		ch <- getSetResp(m, mc).ToMessage().Serialize()
+	go func(m message.RequestMessage, ra *raft.Raft) {
+		ch <- getSetResp(m, ra).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{
 			St:     message.EndResp,
@@ -67,7 +68,7 @@ func (c *SetCommand) Execute(m message.RequestMessage) <-chan []byte {
 		}.ToMessage().Serialize()
 
 		close(ch)
-	}(m, c.mc)
+	}(m, c.ra)
 
 	return ch
 }

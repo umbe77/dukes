@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/raft"
 	raftboltdb "github.com/hashicorp/raft-boltdb"
+
 	"github.com/umbe77/dukes/cache"
 )
 
@@ -27,6 +28,7 @@ type Cluster struct {
 }
 
 func NewStore(ch *cache.Cache, raftDir, raftBind string) *Cluster {
+	os.Mkdir(raftDir, 0700)
 	return &Cluster{
 		Storage:  ch,
 		RaftDir:  raftDir,

@@ -28,8 +28,14 @@ func (s *Server) Close() {
 	s.ln.Close()
 }
 
-func (s *Server) Run() error {
+func (s *Server) Run(nodeId string, isLeader bool) error {
 	var err error
+
+	err = s.cluster.Start(nodeId, isLeader)
+	if err != nil {
+		return err
+	}
+
 	s.ln, err = net.Listen("tcp", s.ListenerAddr)
 	if err != nil {
 		return err
@@ -69,13 +75,13 @@ func (s *Server) handleCommand(m message.RequestMessage, c net.Conn) {
 	case message.CmdPing:
 		cmd = command.NewPingCommand()
 	case message.CmdSet:
-		cmd = command.NewSetCommand(s.cluster.Storage)
+		cmd = command.NewSetCommand(s.cluster.raft)
 	case message.CmdGet:
 		cmd = command.NewGetCommand(s.cluster.Storage)
 	case message.CmdHas:
 		cmd = command.NewHasCommand(s.cluster.Storage)
 	case message.CmdDel:
-		cmd = command.NewDelCommand(s.cluster.Storage)
+		cmd = command.NewDelCommand(s.cluster.raft)
 	case message.CmdDump:
 		cmd = command.NewDumpCommand(s.cluster.Storage)
 	}

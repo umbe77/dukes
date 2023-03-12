@@ -15,4 +15,5 @@ run-cli:
 	@go run cmd/cli/main.go
 
 clean:
-	$(RM) bin/*
+	$(RM) -r bin
+	$(RM) -r raft

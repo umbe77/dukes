@@ -1,22 +1,25 @@
 package command
 
 import (
-	"github.com/umbe77/dukes/cache"
+	"time"
+
+	"github.com/hashicorp/raft"
+
 	"github.com/umbe77/dukes/datatypes"
 	"github.com/umbe77/dukes/message"
 )
 
 type DelCommand struct {
-	mc *cache.Cache
+	ra *raft.Raft
 }
 
-func NewDelCommand(cache *cache.Cache) *DelCommand {
+func NewDelCommand(ra *raft.Raft) *DelCommand {
 	return &DelCommand{
-		mc: cache,
+		ra: ra,
 	}
 }
 
-func getDelResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
+func getDelResp(m message.RequestMessage, ra *raft.Raft) message.ResponseMessage {
 	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -33,8 +36,7 @@ func getDelResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessag
 			},
 		}
 	}
-	key := string(m.Params[0].Value)
-	err := c.Del(key)
+	err := ra.Apply(m.ToMessage().Serialize(), time.Millisecond*50).Error()
 	if err != nil {
 		return message.ResponseMessage{
 			St: message.Error,
@@ -51,9 +53,9 @@ func getDelResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessag
 func (c *DelCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.Cache) {
+	go func(m message.RequestMessage, ra *raft.Raft) {
 
-		ch <- getDelResp(m, mc).ToMessage().Serialize()
+		ch <- getDelResp(m, ra).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{
 			St:     message.EndResp,
@@ -61,7 +63,7 @@ func (c *DelCommand) Execute(m message.RequestMessage) <-chan []byte {
 		}.ToMessage().Serialize()
 
 		close(ch)
-	}(m, c.mc)
+	}(m, c.ra)
 
 	return ch
 }
