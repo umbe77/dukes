@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -12,16 +12,16 @@ import (
 )
 
 type HasCommand struct {
-	mc *cache.MemoryCache
+	mc *cache.Cache
 }
 
-func NewHasCommand(cache *cache.MemoryCache) *HasCommand {
+func NewHasCommand(cache *cache.Cache) *HasCommand {
 	return &HasCommand{
 		mc: cache,
 	}
 }
 
-func getHasResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+func getHasResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
 	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -53,7 +53,7 @@ func getHasResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 func (c *HasCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.MemoryCache) {
+	go func(m message.RequestMessage, mc *cache.Cache) {
 
 		ch <- getHasResp(m, mc).ToMessage().Serialize()
 

@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -16,14 +16,16 @@ import (
 
 type Server struct {
 	ListenerAddr string
-	ch           *cache.MemoryCache
+	cluster      *Cluster
 	ln           net.Listener
 }
 
-func NewServer(addr string, cache *cache.MemoryCache) *Server {
+func NewServer(addr, raftDir, raftBind string) *Server {
+	cache := cache.NewCache()
+	cluster := NewStore(cache, raftDir, raftBind)
 	return &Server{
 		ListenerAddr: addr,
-		ch:           cache,
+		cluster:      cluster,
 	}
 }
 
@@ -70,17 +72,17 @@ func (s *Server) handleCommand(m message.RequestMessage, c net.Conn) {
 	var cmd command.Command
 	switch m.Cmd {
 	case message.CmdPing:
-		cmd = &command.PingCommand{}
+		cmd = command.NewPingCommand()
 	case message.CmdSet:
-		cmd = command.NewSetCommand(s.ch)
+		cmd = command.NewSetCommand(s.cluster.Storage)
 	case message.CmdGet:
-		cmd = command.NewGetCommand(s.ch)
+		cmd = command.NewGetCommand(s.cluster.Storage)
 	case message.CmdHas:
-		cmd = command.NewHasCommand(s.ch)
+		cmd = command.NewHasCommand(s.cluster.Storage)
 	case message.CmdDel:
-		cmd = command.NewDelCommand(s.ch)
+		cmd = command.NewDelCommand(s.cluster.Storage)
 	case message.CmdDump:
-		cmd = command.NewDumpCommand(s.ch)
+		cmd = command.NewDumpCommand(s.cluster.Storage)
 	}
 
 	for v := range cmd.Execute(m) {

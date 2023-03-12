@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -12,10 +12,10 @@ import (
 )
 
 type DumpCommand struct {
-	mc *cache.MemoryCache
+	mc *cache.Cache
 }
 
-func NewDumpCommand(cache *cache.MemoryCache) *DumpCommand {
+func NewDumpCommand(cache *cache.Cache) *DumpCommand {
 	return &DumpCommand{
 		mc: cache,
 	}
@@ -24,7 +24,7 @@ func NewDumpCommand(cache *cache.MemoryCache) *DumpCommand {
 func (c *DumpCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.MemoryCache) {
+	go func(m message.RequestMessage, mc *cache.Cache) {
 
 		for key := range mc.Dump() {
 			ch <- message.ResponseMessage{

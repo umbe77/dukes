@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -11,6 +11,10 @@ import (
 )
 
 type PingCommand struct {
+}
+
+func NewPingCommand() *PingCommand {
+	return &PingCommand{}
 }
 
 func (c *PingCommand) Execute(m message.RequestMessage) <-chan []byte {

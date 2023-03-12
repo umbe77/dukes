@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -12,16 +12,16 @@ import (
 )
 
 type DelCommand struct {
-	mc *cache.MemoryCache
+	mc *cache.Cache
 }
 
-func NewDelCommand(cache *cache.MemoryCache) *DelCommand {
+func NewDelCommand(cache *cache.Cache) *DelCommand {
 	return &DelCommand{
 		mc: cache,
 	}
 }
 
-func getDelResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+func getDelResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
 	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -56,7 +56,7 @@ func getDelResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 func (c *DelCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.MemoryCache) {
+	go func(m message.RequestMessage, mc *cache.Cache) {
 
 		ch <- getDelResp(m, mc).ToMessage().Serialize()
 

@@ -1,15 +1,20 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
 package cache
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"sync"
 
+	"github.com/hashicorp/raft"
+
 	"github.com/umbe77/dukes/datatypes"
+	"github.com/umbe77/dukes/message"
 )
 
 type CacheValue struct {
@@ -17,33 +22,25 @@ type CacheValue struct {
 	Value any
 }
 
-type Cache interface {
-	Set(key string, value *CacheValue) error
-	Get(key string) (*CacheValue, error)
-	Has(key string) bool
-	Del(key string) error
-	Dump() chan string
-}
-
-type MemoryCache struct {
+type Cache struct {
 	sync.RWMutex
 	c map[string]*CacheValue
 }
 
-func NewCache() *MemoryCache {
-	return &MemoryCache{
+func NewCache() *Cache {
+	return &Cache{
 		c: make(map[string]*CacheValue),
 	}
 }
 
-func (c *MemoryCache) Set(key string, value *CacheValue) error {
+func (c *Cache) Set(key string, value *CacheValue) error {
 	c.Lock()
 	c.c[key] = value
 	c.Unlock()
 	return nil
 }
 
-func (c *MemoryCache) Has(key string) bool {
+func (c *Cache) Has(key string) bool {
 	var result bool
 	c.RLock()
 	_, result = c.c[key]
@@ -51,7 +48,7 @@ func (c *MemoryCache) Has(key string) bool {
 	return result
 }
 
-func (c *MemoryCache) Get(key string) (*CacheValue, error) {
+func (c *Cache) Get(key string) (*CacheValue, error) {
 	var (
 		v  *CacheValue
 		ok bool
@@ -65,7 +62,7 @@ func (c *MemoryCache) Get(key string) (*CacheValue, error) {
 	return v, nil
 }
 
-func (c *MemoryCache) Del(key string) error {
+func (c *Cache) Del(key string) error {
 
 	c.Lock()
 	delete(c.c, key)
@@ -73,12 +70,12 @@ func (c *MemoryCache) Del(key string) error {
 	return nil
 }
 
-func (c *MemoryCache) Dump() <-chan string {
+func (c *Cache) Dump() <-chan string {
 	keysCh := make(chan string)
 
-	go func(mc *MemoryCache) {
+	go func(mc *Cache) {
 
-		for k, _ := range c.c {
+		for k := range c.c {
 			keysCh <- k
 		}
 
@@ -87,3 +84,67 @@ func (c *MemoryCache) Dump() <-chan string {
 
 	return keysCh
 }
+
+func applyError(err error) message.ResponseMessage {
+	return message.ResponseMessage{
+		St: message.Error,
+		Params: []message.MessageParam{
+			message.NewMessageParam(datatypes.String, err.Error()),
+		},
+	}
+}
+
+func (c *Cache) Apply(log *raft.Log) any {
+	switch log.Type {
+	case raft.LogCommand:
+		reader := bytes.NewReader(log.Data)
+		msg, err := message.Deserialize(reader)
+		if err != nil {
+			return applyError(err)
+		}
+		req := message.NewRequestMessage(msg)
+
+		switch req.Cmd {
+		case message.CmdSet:
+			value := &CacheValue{
+				Kind:  msg.Params[1].Kind,
+				Value: msg.Params[1].ToAny(),
+			}
+			err := c.Set(string(req.Params[0].Value), value)
+			if err != nil {
+				return applyError(err)
+			}
+			return message.ResponseMessage{
+				St: message.OK,
+				Params: []message.MessageParam{
+					msg.Params[1],
+				},
+			}
+		case message.CmdDel:
+			key := string(req.Params[0].Value)
+			err := c.Del(key)
+			if err != nil {
+				return applyError(err)
+			}
+			return message.ResponseMessage{
+				St:     message.OK,
+				Params: []message.MessageParam{},
+			}
+		}
+	}
+	return nil
+}
+
+func (c *Cache) Snapshot() (raft.FSMSnapshot, error) {
+	return &fsmSnapshot{}, nil
+}
+
+func (c *Cache) Restore(snapshot io.ReadCloser) error {
+	return nil
+}
+
+type fsmSnapshot struct{}
+
+func (f *fsmSnapshot) Persist(sink raft.SnapshotSink) error { return nil }
+
+func (f *fsmSnapshot) Release() {}

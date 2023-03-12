@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -12,16 +12,16 @@ import (
 )
 
 type SetCommand struct {
-	mc *cache.MemoryCache
+	mc *cache.Cache
 }
 
-func NewSetCommand(c *cache.MemoryCache) *SetCommand {
+func NewSetCommand(c *cache.Cache) *SetCommand {
 	return &SetCommand{
 		mc: c,
 	}
 }
 
-func getSetResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+func getSetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
 	if len(m.Params) != 2 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -63,7 +63,7 @@ func getSetResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 func (c *SetCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.MemoryCache) {
+	go func(m message.RequestMessage, mc *cache.Cache) {
 		ch <- getSetResp(m, mc).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{

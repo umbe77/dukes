@@ -1,5 +1,5 @@
 // Copyright (c) 2023 Robeto Ughi
-// 
+//
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
 
@@ -12,16 +12,16 @@ import (
 )
 
 type GetCommand struct {
-	mc *cache.MemoryCache
+	mc *cache.Cache
 }
 
-func NewGetCommand(cache *cache.MemoryCache) *GetCommand {
+func NewGetCommand(cache *cache.Cache) *GetCommand {
 	return &GetCommand{
 		mc: cache,
 	}
 }
 
-func getGetResp(m message.RequestMessage, c *cache.MemoryCache) message.ResponseMessage {
+func getGetResp(m message.RequestMessage, c *cache.Cache) message.ResponseMessage {
 	if len(m.Params) != 1 {
 		return message.ResponseMessage{
 			St: message.BadFormat,
@@ -60,7 +60,7 @@ func getGetResp(m message.RequestMessage, c *cache.MemoryCache) message.Response
 func (c *GetCommand) Execute(m message.RequestMessage) <-chan []byte {
 	ch := make(chan []byte)
 
-	go func(m message.RequestMessage, mc *cache.MemoryCache) {
+	go func(m message.RequestMessage, mc *cache.Cache) {
 		ch <- getGetResp(m, mc).ToMessage().Serialize()
 
 		ch <- message.ResponseMessage{
