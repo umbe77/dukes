@@ -2,8 +2,11 @@
 all:build
 
 build:
-	go build -o bin/dukes main.go
-	go build -o bin/dukes-cli cmd/cli/main.go
+	go build -v -o bin/dukes main.go
+	go build -v -o bin/dukes-cli cmd/cli/main.go
+	
+docker:
+	docker build --rm -t dukes:0.1.0 .
 	
 test:
 	@go test -v ./...

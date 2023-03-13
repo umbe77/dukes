@@ -9,6 +9,7 @@ const (
 	CmdHas
 	CmdDel
 	CmdDump
+	CmdJoin
 )
 
 type RequestMessage struct {

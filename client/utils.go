@@ -109,7 +109,7 @@ func processHasResponse(conn net.Conn) (bool, error) {
 	return resp, respError
 }
 
-func processDelResponse(conn net.Conn) error {
+func processVoidResponse(conn net.Conn) error {
 	var respError error
 	msgReceivedCount := 0
 	for {

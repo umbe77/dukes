@@ -43,6 +43,23 @@ func (c *Client) Ping() (string, error) {
 	return precessSimpleResponse(c.conn)
 }
 
+func (c *Client) Join(nodeId, nodeAddr string) error {
+	joinMsg := message.RequestMessage{
+		Cmd: message.CmdJoin,
+		Params: []message.MessageParam{
+			message.NewMessageParam(datatypes.String, nodeId),
+			message.NewMessageParam(datatypes.String, nodeAddr),
+		},
+	}.ToMessage()
+
+	if _, err := c.conn.Write(joinMsg.Serialize()); err != nil {
+		return err
+	}
+
+	return processVoidResponse(c.conn)
+
+}
+
 func (c *Client) Set(key string, kind datatypes.DataType, value any) (string, error) {
 	setMsg := message.RequestMessage{
 		Cmd: message.CmdSet,
@@ -99,7 +116,7 @@ func (c *Client) Del(key string) error {
 		return err
 	}
 
-	return processDelResponse(c.conn)
+	return processVoidResponse(c.conn)
 }
 
 func (c *Client) Dump() <-chan string {
